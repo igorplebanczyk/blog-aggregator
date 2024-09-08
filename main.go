@@ -19,6 +19,9 @@ func main() {
 		Handler: mux,
 	}
 
+	mux.HandleFunc("GET /v1/healthz", readinessHandler)
+	mux.HandleFunc("GET /v1/err", errorHandler)
+
 	err = server.ListenAndServe()
 	if err != nil {
 		return
