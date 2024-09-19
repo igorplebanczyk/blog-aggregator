@@ -37,6 +37,8 @@ func main() {
 	mux.HandleFunc("GET /v1/err", errorHandler)
 	mux.HandleFunc("POST /v1/users", apiCfg.createUserHandler)
 
+	mux.HandleFunc("GET /v1/users", apiCfg.middlewareAuth(apiCfg.getUserHandler))
+
 	err = server.ListenAndServe()
 	if err != nil {
 		return
