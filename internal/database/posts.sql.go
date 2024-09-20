@@ -60,7 +60,13 @@ SELECT posts.id, posts.created_at, posts.updated_at, title, posts.url, descripti
 JOIN feeds ON posts.feed_id = feeds.id
 WHERE feeds.user_id = $1
 ORDER BY posts.created_at DESC
+LIMIT $2
 `
+
+type GetPostsByUserParams struct {
+	UserID uuid.UUID
+	Limit  int32
+}
 
 type GetPostsByUserRow struct {
 	ID            uuid.UUID
@@ -80,8 +86,8 @@ type GetPostsByUserRow struct {
 	LastFetchedAt sql.NullTime
 }
 
-func (q *Queries) GetPostsByUser(ctx context.Context, userID uuid.UUID) ([]GetPostsByUserRow, error) {
-	rows, err := q.db.QueryContext(ctx, getPostsByUser, userID)
+func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]GetPostsByUserRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsByUser, arg.UserID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
