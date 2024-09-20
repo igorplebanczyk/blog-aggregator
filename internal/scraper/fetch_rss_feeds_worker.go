@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/google/uuid"
 	"net/http"
 	"sync"
 	"time"
@@ -49,6 +50,25 @@ func processFeeds(db *database.Queries, feeds []database.Feed, client http.Clien
 			}
 
 			for _, item := range rss.Channel.Items {
+				publishedAt, err := time.Parse(time.RFC1123Z, item.PubDate)
+				if err != nil {
+					fmt.Printf("failed to parse published at: %v", err)
+					continue
+				}
+
+				_, err = db.CreatePost(context.Background(), database.CreatePostParams{
+					ID:          uuid.New(),
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
+					Title:       item.Title,
+					Url:         item.Link,
+					Description: item.Description,
+					PublishedAt: publishedAt,
+					FeedID:      feed.ID,
+				})
+				if err != nil {
+					return
+				}
 				fmt.Println(item.Title)
 			}
 
