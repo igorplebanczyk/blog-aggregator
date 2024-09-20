@@ -8,8 +8,9 @@ SELECT * FROM feeds;
 
 -- name: GetNextFeedToFetch :many
 SELECT * FROM feeds
+WHERE user_id = $1
 ORDER BY last_fetched_at ASC NULLS FIRST
-LIMIT $1;
+LIMIT $2;
 
 -- name: MarkFeedFetched :one
 UPDATE feeds
