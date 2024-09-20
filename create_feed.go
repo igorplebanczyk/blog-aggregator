@@ -15,13 +15,24 @@ func (cfg *apiConfig) createFeedHandler(w http.ResponseWriter, r *http.Request, 
 		URL  string `json:"url"`
 	}
 
-	type response struct {
+	type FeedResponse struct {
 		ID        uuid.UUID `json:"id"`
 		CreatedAt string    `json:"created_at"`
 		UpdatedAt string    `json:"updated_at"`
 		Name      string    `json:"name"`
 		URL       string    `json:"url"`
 		UserID    uuid.UUID `json:"user_id"`
+	}
+
+	type FeedFollowResponse struct {
+		ID     uuid.UUID `json:"id"`
+		UserID uuid.UUID `json:"user_id"`
+		FeedID uuid.UUID `json:"feed_id"`
+	}
+
+	type response struct {
+		FeedResponse       FeedResponse
+		FeedFollowResponse FeedFollowResponse
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -50,18 +61,34 @@ func (cfg *apiConfig) createFeedHandler(w http.ResponseWriter, r *http.Request, 
 		Url:       params.URL,
 		UserID:    user.ID,
 	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to create feed: "+err.Error())
+		return
+	}
 
+	feedFollow, err := cfg.DB.CreateFeedFollow(r.Context(), database.CreateFeedFollowParams{
+		ID:     uuid.New(),
+		UserID: user.ID,
+		FeedID: feed.ID,
+	})
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to create feed")
 		return
 	}
 
 	respondWithJSON(w, http.StatusCreated, response{
-		ID:        feed.ID,
-		CreatedAt: feed.CreatedAt.Format(time.RFC3339),
-		UpdatedAt: feed.UpdatedAt.Format(time.RFC3339),
-		Name:      feed.Name,
-		URL:       feed.Url,
-		UserID:    feed.UserID,
+		FeedResponse: FeedResponse{
+			ID:        feed.ID,
+			CreatedAt: feed.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: feed.UpdatedAt.Format(time.RFC3339),
+			Name:      feed.Name,
+			URL:       feed.Url,
+			UserID:    feed.UserID,
+		},
+		FeedFollowResponse: FeedFollowResponse{
+			ID:     feedFollow.ID,
+			UserID: feedFollow.UserID,
+			FeedID: feedFollow.FeedID,
+		},
 	})
 }
