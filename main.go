@@ -44,6 +44,7 @@ func main() {
 
 	mux.HandleFunc("POST /v1/feed_follows", apiCfg.middlewareAuth(apiCfg.createFeedFollowHandler))
 	mux.HandleFunc("DELETE /v1/feed_follows/{feed_id}", apiCfg.middlewareAuth(apiCfg.deleteFeedFollowHandler))
+	mux.HandleFunc("GET /v1/feed_follows", apiCfg.middlewareAuth(apiCfg.getAllUserFeedFollowsHandler))
 
 	err = server.ListenAndServe()
 	if err != nil {
