@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func FetchRSSFeedsWorker(db *database.Queries, user database.User, feedNum int32) {
+func FetchRSSFeedsWorker(db *database.Queries, feedNum int32) {
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -22,10 +22,7 @@ func FetchRSSFeedsWorker(db *database.Queries, user database.User, feedNum int32
 	for {
 		select {
 		case <-ticker.C:
-			feeds, err := db.GetNextFeedToFetch(context.Background(), database.GetNextFeedToFetchParams{
-				UserID: user.ID,
-				Limit:  feedNum,
-			})
+			feeds, err := db.GetNextFeedToFetch(context.Background(), feedNum)
 			if err != nil {
 				fmt.Printf("failed to fetch feeds: %v", err)
 				continue

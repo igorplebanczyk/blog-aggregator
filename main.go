@@ -3,7 +3,6 @@ package main
 import (
 	"blog-aggregator/internal/database"
 	"blog-aggregator/internal/scraper"
-	"context"
 	"database/sql"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -28,14 +27,7 @@ func main() {
 		DB: database.New(db),
 	}
 
-	go func() {
-		user, err := apiCfg.DB.GetUserByApiKey(context.Background(), "a966658c2a39cfc117ea1ba500b63bcd6aaabd8522a817a59cb2a23a7ee83d89")
-		if err != nil {
-			return
-		}
-
-		scraper.FetchRSSFeedsWorker(apiCfg.DB, user, 10)
-	}()
+	go scraper.FetchRSSFeedsWorker(apiCfg.DB, 10)
 
 	port := os.Getenv("PORT")
 	mux := http.NewServeMux()
